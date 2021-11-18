@@ -25,7 +25,7 @@ contract MyContract is ERC721, EIP712, AccessControl {
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     uint256 public constant TOKEN_PRICE = 50000000000000000; //0.05 ETH
-    uint256 public constant MAX_TOKENS = 15;
+    uint256 public constant COLLECTION_SIZE = 15;
     uint public constant TOKEN_PER_PERSON_LIMIT = 1; // only 1 token per address
     uint private _setAsideTokenCount = 5;
     bool public isSaleActive = false;
@@ -144,8 +144,8 @@ contract MyContract is ERC721, EIP712, AccessControl {
         console.logBytes(signature);
 
         require(_verify(signer, _hash(voucher), signature), "Invalid signature");
-        require(_tokenIds.current() < MAX_TOKENS, "All tokens have been minted");
-        require(balanceOf(voucher.redeemer) < TOKEN_PER_PERSON_LIMIT, "Only" + TOKEN_PER_PERSON_LIMIT + "token(s) per user");
+        require(_tokenIds.current() < COLLECTION_SIZE, "All tokens have been minted");
+        require(balanceOf(voucher.redeemer) < TOKEN_PER_PERSON_LIMIT, string(abi.encodePacked("Only ", TOKEN_PER_PERSON_LIMIT, " token(s) per user")));
         require(TOKEN_PRICE <= msg.value, "Ether value sent is not sufficient");
 
         if(isPreSaleActive) {

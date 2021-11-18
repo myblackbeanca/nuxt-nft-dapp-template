@@ -18,13 +18,13 @@ describe("MyContract contract", function () {
         it("Deployment should set default values", async function () {
         
             const TOKEN_PRICE = await hardhatToken.TOKEN_PRICE();
-            const MAX_TOKENS = await hardhatToken.MAX_TOKENS();
+            const COLLECTION_SIZE = await hardhatToken.COLLECTION_SIZE();
             const isSaleActive = await hardhatToken.isSaleActive();
 
-            console.log(ethers.utils.formatUnits(TOKEN_PRICE), +MAX_TOKENS, isSaleActive);
+            console.log(ethers.utils.formatUnits(TOKEN_PRICE), +COLLECTION_SIZE, isSaleActive);
         
             expect(ethers.utils.formatUnits(TOKEN_PRICE)).to.equal('0.05');
-            expect(+MAX_TOKENS).to.equal(1500);
+            expect(+COLLECTION_SIZE).to.equal(1500);
             expect(isSaleActive).to.equal(false);        
         })
     })
