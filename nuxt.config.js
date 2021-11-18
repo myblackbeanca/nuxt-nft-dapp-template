@@ -52,10 +52,19 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/bootstrap
     'bootstrap-vue/nuxt',
+    '@nuxtjs/sitemap'
   ],
 
   bootstrapVue: {
     icons: true,
+  },
+
+  sitemap: {
+    hostname: 'https://mysite.com',
+    exclude: [
+      '/admin/**'
+    ],
+    // routes: getRoutes
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
