@@ -3,51 +3,43 @@
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
-// import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol";
-// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/interfaces/IERC2981.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
-contract MyContract is ERC721, EIP712, AccessControl {
+contract MyContract is ERC721, EIP712, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     using Strings for uint256;
     using Address for address;
 
-    // using ECDSA for bytes32;
-
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    uint256 public constant TOKEN_PRICE = 50000000000000000; //0.05 ETH
+    uint256 public constant TOKEN_PRICE = 0.05 ether;
     uint256 public constant COLLECTION_SIZE = 15;
     uint public constant TOKEN_PER_PERSON_LIMIT = 1; // only 1 token per address
-    uint private _setAsideTokenCount = 5;
     bool public isSaleActive = false;
     bool public isPreSaleActive = false;
     
     bool private _canReveal = false;
     string private _hiddenURI;
     string private _baseUri;
-    address private _owner;
 
-    constructor(string memory delayedRevealURI, string memory baseUri) 
+    constructor(string memory delayedRevealURI, string memory baseUri, uint setAsideTokenCount) 
         ERC721("MyContract", "MC")
-        EIP712("MyContract", "1") {
-            _setupRole(MINTER_ROLE, msg.sender);
+        EIP712("MyContract", "1")
+        Ownable() {
             _hiddenURI = delayedRevealURI;
             _baseUri = baseUri;
-            _owner = msg.sender;
             
             console.log("init", _hiddenURI, _baseUri, block.chainid);
             console.logAddress(msg.sender);
+
+            // emit event to freeze metadata
+            // event PermanentURI(string _value, uint256 indexed _id);
             
-            _setAside();
+            _setAside(setAsideTokenCount);
         }
 
     /// @notice Represents an un-minted NFT, which has not yet been recorded into the blockchain. A signed voucher can be redeemed for a real NFT using the redeem function.
@@ -56,18 +48,18 @@ contract MyContract is ERC721, EIP712, AccessControl {
         bool whitelisted;
     }
 
-    function _setAside() internal {
-        for(uint256 index = 0; index < _setAsideTokenCount; index++) {
+    function _setAside(uint tokenCount) internal {
+        for(uint256 index = 0; index < tokenCount; index++) {
             _tokenIds.increment();
             uint256 newItemId = _tokenIds.current();
 
             console.log("setAside minting token:", newItemId);
 
-            _safeMint(_owner, newItemId);
+            _safeMint(owner(), newItemId);
         }
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override (AccessControl, ERC721) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override (ERC721) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
@@ -77,17 +69,17 @@ contract MyContract is ERC721, EIP712, AccessControl {
     }
 
     /// @notice Set hidden metadata uri
-    function setHiddenUri(string memory uri) onlyRole(MINTER_ROLE) external {
+    function setHiddenUri(string memory uri) onlyOwner external {
         _hiddenURI = uri;
     }
 
     /// @notice Set base uri
-    function setBaseUri(string memory uri) onlyRole(MINTER_ROLE) external {
+    function setBaseUri(string memory uri) onlyOwner external {
         _baseUri = uri;
     }
 
     /// @notice Flip public sale
-    function flipSaleState() onlyRole(MINTER_ROLE) external {
+    function flipSaleState() onlyOwner external {
         isSaleActive = !isSaleActive;
         if(isSaleActive) {
             isPreSaleActive = false;
@@ -95,18 +87,13 @@ contract MyContract is ERC721, EIP712, AccessControl {
     }
 
     /// @notice Flip presale
-    function flipPresaleState() onlyRole(MINTER_ROLE) external {
+    function flipPresaleState() onlyOwner external {
         isPreSaleActive = !isPreSaleActive;
     }
 
     /// @notice Reveal metadata for all the tokens
-    function reveal() onlyRole(MINTER_ROLE) external {
+    function reveal() onlyOwner external {
         _canReveal = true;
-    }
-
-    /// @notice Get contract's balance
-    function balance() public view returns (uint256) {
-        return address(this).balance;
     }
 
     /// @notice Get token's URI. In case of delayed reveal we give user the json of the placeholer metadata.
@@ -116,7 +103,7 @@ contract MyContract is ERC721, EIP712, AccessControl {
 
         string memory baseURI = _baseURI();
 
-        if(msg.sender == _owner || _canReveal) {
+        if(msg.sender == owner() || _canReveal) {
             return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString(), ".json")) : "";
         }
 
@@ -124,11 +111,10 @@ contract MyContract is ERC721, EIP712, AccessControl {
     }
 
     /// @notice Withdraw's contract's balance to the minter's address
-    function withdraw() external onlyRole(MINTER_ROLE) {
-        require(balance() > 0, "No balance");
+    function withdraw() external onlyOwner {
+        require(address(this).balance > 0, "No balance");
 
-        address payable owner = payable(msg.sender);
-        owner.transfer(balance());
+        payable(owner()).transfer(address(this).balance);
     }
 
     /// @notice Redeems an NFTVoucher for an actual NFT, creating it in the process.
@@ -146,10 +132,10 @@ contract MyContract is ERC721, EIP712, AccessControl {
         require(_verify(signer, _hash(voucher), signature), "Invalid signature");
         require(_tokenIds.current() < COLLECTION_SIZE, "All tokens have been minted");
         require(balanceOf(voucher.redeemer) < TOKEN_PER_PERSON_LIMIT, string(abi.encodePacked("Only ", TOKEN_PER_PERSON_LIMIT, " token(s) per user")));
-        require(TOKEN_PRICE <= msg.value, "Ether value sent is not sufficient");
+        require(msg.value >= TOKEN_PRICE, "Ether value sent is not sufficient");
 
         if(isPreSaleActive) {
-            require(voucher.whitelisted, "Presale is only open to whitelisted users");
+            require(voucher.whitelisted, "User is not on a whitelist");
         }
         else {
             require(isSaleActive, "Sale must be active to mint");
@@ -164,9 +150,6 @@ contract MyContract is ERC721, EIP712, AccessControl {
         // transfer the token to the redeemer
         _transfer(signer, voucher.redeemer, newItemId);
 
-        // record payment to contract's balance - dont need to do this, payment is automatically recorded to the contract's balance
-        // payable(address(this)).transfer(msg.value);
-
         return newItemId;
     }
 
@@ -180,15 +163,11 @@ contract MyContract is ERC721, EIP712, AccessControl {
             voucher.redeemer,
             voucher.whitelisted
         )));
-
-        // address recoveredSigner = ECDSA.recover(hash, signature);
-        // return recoveredSigner == signer;
     }
 
     function _verify(address signer, bytes32 digest, bytes memory signature)
     internal view returns (bool)
     {
-        console.log("signer has minter role:", hasRole(MINTER_ROLE, signer));
-        return hasRole(MINTER_ROLE, signer) && SignatureChecker.isValidSignatureNow(signer, digest, signature);
+        return owner() == msg.sender && SignatureChecker.isValidSignatureNow(signer, digest, signature);
     }
 }
