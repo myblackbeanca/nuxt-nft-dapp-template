@@ -1,5 +1,5 @@
 
-const { METAMASK_PRIVATE_KEY, METAMASK_PUBLIC_KEY, CONTRACT_ADDRESS } = process.env;
+const { VOUCHER_SIGNER_PRIVATE_KEY, CONTRACT_ADDRESS, CHAIN_ID, ALCHEMY_MAINNET_API_KEY } = process.env;
 
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
@@ -9,9 +9,10 @@ export default {
   target: 'static',
 
   env: {
-    METAMASK_PRIVATE_KEY,
-    METAMASK_PUBLIC_KEY,
-    CONTRACT_ADDRESS
+    VOUCHER_SIGNER_PRIVATE_KEY,
+    CONTRACT_ADDRESS,
+    CHAIN_ID,
+    ALCHEMY_MAINNET_API_KEY
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -34,7 +35,8 @@ export default {
         href: "https://mysite.com",
       },
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-    ]
+    ],
+    script: [{ src: 'https://identity.netlify.com/v1/netlify-identity-widget.js' }]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -44,7 +46,7 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    // '@/plugins/smart-contract'
+    '@/plugins/wallet'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -70,7 +72,11 @@ export default {
     exclude: [
       '/admin/**'
     ],
-    // routes: getRoutes
+    defaults: {
+      changefreq: 'daily',
+      priority: 1,
+      lastmod: new Date()
+    }
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build

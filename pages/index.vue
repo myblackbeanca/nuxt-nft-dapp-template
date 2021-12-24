@@ -21,9 +21,9 @@ export default {}
 
 #landing {
   min-height:inherit;
-  background: white;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  background: url("~/assets/img/background.jpg");
+  // background-repeat: no-repeat;
+  // background-size: 100% 100%;
 }
 
 </style>

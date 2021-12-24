@@ -4,7 +4,7 @@
         <b-row>
             <b-col cols="12" class="d-flex flex-column align-items-center text-center">
                 <b-button href="#" target="_blank" variant="link">
-                    <b-icon icon='discord' variant='success' font-scale='2.2' />
+                    <b-icon icon='discord' variant='light' font-scale='2.2' />
                 </b-button>
             </b-col>
         </b-row>
