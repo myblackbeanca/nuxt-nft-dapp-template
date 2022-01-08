@@ -1,7 +1,7 @@
 <template>
 	<b-navbar toggleable="lg" type="dark" variant="dark">
 		<b-navbar-brand to="/">
-				<b-img src="@/assets/img/logo.svg" alt="logo" width="60px" />
+				<b-img src="logo.svg" alt="logo" width="60px" />
     </b-navbar-brand>
 
 		<b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -24,7 +24,7 @@
 					<b-button
 						variant="outline-light"
 						:disabled="!!$wallet.account"
-						@click="$wallet.connect">
+						@click="onWalletConnect">
 						<strong>{{
 							!!$wallet.account ? $wallet.accountCompact : 'Connect Wallet'
 						}}</strong>
@@ -45,6 +45,18 @@ export default {
 		}
 	},
 	methods: {
+		async onWalletConnect() {
+			try {
+				await this.$wallet.connect()
+			} catch (err) {
+				console.error({err})
+				this.$bvToast.toast(err.message || 'Wallet connection failed', {
+					title: 'Wallet',
+					variant: 'danger',
+					autoHideDelay: 3000
+				})
+			}
+		},
 		login() {
 			identity.open('login')
 		},

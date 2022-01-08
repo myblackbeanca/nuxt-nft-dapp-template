@@ -1,89 +1,105 @@
-import { ethers } from 'ethers'
 import Vue from 'vue'
+import { ethers } from 'ethers'
+import MetaMaskOnboarding from '@metamask/onboarding'
+import { getCurrency } from '@/utils/metamask'
 
-export default ({env}, inject) => {
+export default async ({env}, inject) => {
 
     const wallet = Vue.observable({
         account: null,
         accountCompact: null,
         network: null,
         balance: null,
-        transactionCount: null,
+        provider: null,
+
+        get hexChainId() {
+            return '0x' + this.network?.chainId.toString(16)
+        },
+
         async init() {
-            const provider = new ethers.providers.Web3Provider(window.ethereum)
-            const [account] = await provider.listAccounts()
-            // console.log('wallet init', {account})
+            if(!window.ethereum) return
+            
+            this.provider = new ethers.providers.Web3Provider(window.ethereum) //prefably diff node like Infura, Alchemy or Moralis
+            this.network = await this.provider.getNetwork()
+            const [account] = await this.provider.listAccounts()
 
             !!account && this.setAccount(account)
         },
-        setAccount(newAccount) {
+        async setAccount(newAccount) {
             if(newAccount) {
                 this.account = newAccount
                 this.accountCompact = `${newAccount.substring(0, 4)}...${newAccount.substring(newAccount.length - 4)}`
+
+                const balance = (await this.provider.getBalance(newAccount)).toString()
+                this.balance = `${(+ethers.utils.formatEther(balance)).toFixed(3)} ${getCurrency(this.network.chainId)}`
             }
             else {
                 this.account = null
                 this.accountCompact = null
+                this.balance = null
             }
         },
-        connect() {
-            return new Promise(async (resolve, reject) => {
-                if (!window.ethereum) {
-                    reject("Metamask is not installed")
-                  }
+        async connect() {
+            if(!MetaMaskOnboarding.isMetaMaskInstalled()) {
+                const onboarding = new MetaMaskOnboarding()
+                onboarding.startOnboarding()
+                return
+            }
+        
+            wallet.network = await wallet.provider.getNetwork()
 
-                  try {
-                    // console.log(typeof window.ethereum.networkVersion)
-                    const provider = new ethers.providers.Web3Provider(window.ethereum)
-                    console.log({provider})
-                    const [account] = await provider.send('eth_requestAccounts')
+            const [account] = await wallet.provider.send('eth_requestAccounts')
+            console.log('wallet connect', {account})
 
-                    console.log('wallet connect', {account})
-
-                    if(!account) return
-                    this.setAccount(account)
-
-                    const balance = (await provider.getBalance(account)).toString()
-                    this.balance = ethers.utils.formatEther(balance)
-
-                    this.network = await provider.getNetwork()
-                    this.transactionCount = await provider.getTransactionCount(account)
-                  } catch (e) {
-                    console.error(e)
-                    reject(e)
-                  }
-
-                resolve(this.$wallet.account)
-            })
-
+            if(account) {
+                await wallet.setAccount(account)
+            }
         },
+        async switchNetwork(config) {
+            if(this.network?.chainId === config.chainId || `0x${this.network?.chainId.toString(16)}` === config.chainId) {
+                return //since we are on correct network
+            }
+
+			try {
+				await this.provider.send('wallet_switchEthereumChain', [
+					{ chainId: config.chainId },
+				])
+			} catch (err) {
+				// This error code indicates that the chain has not been added to MetaMask.
+				if (err.code === 4902) {
+                    await this.provider.send('wallet_addEthereumChain', [config])
+                } else {
+                    throw err
+                }
+			}
+		},
     })
 
-    window.ethereum.on('connect', (data) => {
-        console.log('connect', data)
-    })
-
-    window.ethereum.on('disconnect', (data) => {
-        console.log('disconnect', data)
-    })
-
-    window.ethereum.on('accountsChanged', ([newAddress]) => {
-        console.log('accountsChanged', newAddress)
-        wallet.setAccount(newAddress)
-    })
-
-    window.ethereum.on('chainChanged', (chainId) => {
-        console.log('chainChanged', chainId)
-        setTimeout(() => {
+    if(window.ethereum) {
+        window.ethereum.on('connect', (data) => {
+            console.log('connect', data)
+        })
+    
+        window.ethereum.on('disconnect', (data) => {
+            console.log('disconnect', data)
+        })
+    
+        window.ethereum.on('accountsChanged', ([newAddress]) => {
+            console.log('accountsChanged', newAddress)
+            wallet.setAccount(newAddress)
+        })
+    
+        window.ethereum.on('chainChanged', (chainId) => {
+            console.log('chainChanged', chainId)
             window.location.reload()
-        }, 200)
-    })
+        })
+    
+        window.ethereum.on('error', (e) => {
+            console.error('on error', e)
+        })
 
-    window.ethereum.on('error', (e) => {
-        console.error('on error', e)
-    })
-
-    wallet.init()
+        wallet.init()
+    }
 
     inject('wallet', wallet)
 }
