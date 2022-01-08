@@ -25,6 +25,7 @@ export default async ({env}, inject) => {
 
             !!account && this.setAccount(account)
         },
+
         async setAccount(newAccount) {
             if(newAccount) {
                 this.account = newAccount
@@ -39,6 +40,7 @@ export default async ({env}, inject) => {
                 this.balance = null
             }
         },
+
         async connect() {
             if(!MetaMaskOnboarding.isMetaMaskInstalled()) {
                 const onboarding = new MetaMaskOnboarding()
@@ -55,6 +57,7 @@ export default async ({env}, inject) => {
                 await wallet.setAccount(account)
             }
         },
+        
         async switchNetwork(config) {
             if(this.network?.chainId === config.chainId || `0x${this.network?.chainId.toString(16)}` === config.chainId) {
                 return //since we are on correct network

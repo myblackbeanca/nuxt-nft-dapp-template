@@ -7,7 +7,7 @@ export default ({env}, inject) => {
 
     const { address, abi } = siteConfig.smartContract
     if(!address || !abi) {
-        console.error("Smart Contract configuration is missing. Check siteConfig.js")
+        console.error("Smart Contract configuration is missing. Check siteConfig.json")
     }
     else {
         contract = new ethers.Contract(address, abi)

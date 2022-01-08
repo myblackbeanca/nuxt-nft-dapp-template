@@ -6,7 +6,7 @@
             <b-button-toolbar key-nav aria-label="Toolbar with button groups">
               <b-button-group class="mx-1">
                 <b-button class="font-weight-bold" variant="success" @click="onCountDown">-</b-button>
-                <b-button class="text-light font-weight-bold" variant="transparent">{{ count }}</b-button>
+                <b-button class="text-light font-weight-bold" variant="transparent"><h4>{{ count }}</h4></b-button>
                 <b-button class="font-weight-bold" variant="success" @click="onCountUp">+</b-button>
               </b-button-group>
               <b-button-group class="mx-1">
