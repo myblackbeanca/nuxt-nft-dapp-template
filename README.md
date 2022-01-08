@@ -1,6 +1,12 @@
-# nuxt-nft-template
+# [Zero Code NFT](https://zerocodenft.com) Nuxt NFT Template
 
 ## Build Setup
+
+### Envrionment variables:
+
+* VOUCHER_SIGNER_PRIVATE_KEY - private key to sign transaction with. used for whitelisting
+* ALCHEMY_MAINNET_API_KEY - alchemy API key if using Alchemy as provider
+
 
 ```bash
 # install dependencies
