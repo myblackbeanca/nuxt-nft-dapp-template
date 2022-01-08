@@ -13,7 +13,7 @@ export default async ({env}, inject) => {
         provider: null,
 
         get hexChainId() {
-            return '0x' + this.network?.chainId.toString(16)
+            return '0x' + this.network?.chainId?.toString(16)
         },
 
         async init() {
@@ -79,26 +79,15 @@ export default async ({env}, inject) => {
     })
 
     if(window.ethereum) {
-        window.ethereum.on('connect', (data) => {
-            console.log('connect', data)
-        })
-    
-        window.ethereum.on('disconnect', (data) => {
-            console.log('disconnect', data)
-        })
     
         window.ethereum.on('accountsChanged', ([newAddress]) => {
-            console.log('accountsChanged', newAddress)
+            console.info('accountsChanged', newAddress)
             wallet.setAccount(newAddress)
         })
     
         window.ethereum.on('chainChanged', (chainId) => {
-            console.log('chainChanged', chainId)
+            console.info('chainChanged', chainId)
             window.location.reload()
-        })
-    
-        window.ethereum.on('error', (e) => {
-            console.error('on error', e)
         })
 
         wallet.init()

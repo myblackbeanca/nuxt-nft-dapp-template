@@ -2,10 +2,14 @@
 
 ## Build Setup
 
-### Envrionment variables:
+### Envrionment variables
 
 * VOUCHER_SIGNER_PRIVATE_KEY - private key to sign transaction with. used for whitelisting
 * ALCHEMY_MAINNET_API_KEY - alchemy API key if using Alchemy as provider
+
+### Config
+
+Set your configuration in siteConfig.json file. It will then be available throughout the app as a plugin.
 
 
 ```bash
