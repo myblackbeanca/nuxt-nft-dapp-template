@@ -3,7 +3,16 @@
     <b-container id="container1" class="p-0" fluid>
       <b-row id="landing">
           <b-col class="d-flex align-items-center justify-content-center">
-            <b-button class="font-weight-bold" variant="success" size="lg" @click="mint">MINT</b-button>
+            <b-button-toolbar key-nav aria-label="Toolbar with button groups">
+              <b-button-group class="mx-1">
+                <b-button class="font-weight-bold" variant="success" @click="onCountDown">-</b-button>
+                <b-button class="text-light font-weight-bold" variant="transparent">{{ count }}</b-button>
+                <b-button class="font-weight-bold" variant="success" @click="onCountUp">+</b-button>
+              </b-button-group>
+              <b-button-group class="mx-1">
+                <b-button class="font-weight-bold" variant="success" size="lg" @click="mint">MINT</b-button>
+              </b-button-group>
+            </b-button-toolbar>
           </b-col>
       </b-row>
     </b-container>
@@ -24,7 +33,18 @@ console.info(
 console.groupEnd()
 
 export default {
+  data(){
+    return {
+      count: 1
+    }
+  },
   methods: {
+    onCountUp() {
+      this.count += 1
+    },
+    onCountDown(){
+      if(this.count > 1) this.count -= 1
+    },
     async mint() {
       try {
         if(`0x${this.$wallet.hexChainId}` !== this.$siteConfig.smartContract.chainIdHex) {
@@ -40,8 +60,7 @@ export default {
         const signer = this.$wallet.provider.getSigner()
         const signedContract = this.$contract.connect(signer)
 
-        const mintCount = 1
-        const total = mintCount * this.$siteConfig.smartContract.mintPrice
+        const total = this.count * this.$siteConfig.smartContract.mintPrice
         const value = ethers.utils.parseEther(total.toString())
         
         const txResponse = await signedContract.mint(1, {
