@@ -21,8 +21,6 @@
 
 <script>
 
-import { CHAINID_CONFIG_MAP } from '@/utils/metamask'
-
 console.group("Powered by www.zerocodenft.com")
 console.info(
   "%cDrop Your NFT collection with ZERO coding skills",
@@ -31,6 +29,9 @@ console.info(
   font-weight:bold;`
 )
 console.groupEnd()
+
+import { CHAINID_CONFIG_MAP } from '@/utils/metamask'
+import signVoucher from '@/utils/signVoucher'
 
 export default {
   data(){
@@ -57,15 +58,54 @@ export default {
           await this.$wallet.connect()
         }
 
-        const signer = this.$wallet.provider.getSigner()
-        const signedContract = this.$contract.connect(signer)
+        let buyPrice, txResponse;
 
-        const total = this.count * this.$siteConfig.smartContract.mintPrice
+        if(this.$siteConfig.smartContract.hasWhitelist) {
+          const isWhitelisted = await $axios.get('')
+
+          const isPresale = await signedContract.isWhitelistSaleActive()
+          const presalePrice = +ethers.formatEther(await signedContract.PRESALE_TOKEN_PRICE())
+          const publicPrice = +ethers.formatEther(await signedContract.MINT_PRICE())
+          buyPrice = isPresale ? presalePrice : publicPrice
+        }
+        else {
+          buyPrice = +ethers.formatEther(await signedContract.MINT_PRICE())
+        }
+
+        const total = this.count * buyPrice
         const value = ethers.utils.parseEther(total.toString())
-        
-        const txResponse = await signedContract.mint(1, {
-          value
-        })
+
+        console.log({buyPrice})
+
+        if(this.$siteConfig.smartContract.hasWhitelist) {
+          const { chainId, address, name } = this.$siteConfig.smartContract
+
+          const domain = {
+            name: name.replace(/\s/g, ''),
+            version: '1',
+            chainId,
+            verifyingContract: address
+          }
+
+          const voucher = {
+            redeemer: $wallet.account,
+            whitelisted: true,
+            numberOfTokens
+          }
+
+          const { signer: mintSigner, signature } = await signVoucher(voucher, domain);
+
+          txResponse = await signedContract.redeem(voucher, mintSigner.address, signature, {
+            value,
+            // gasPrice,
+            // gasLimit: gasEstimate
+          })
+        }
+        else {
+          txResponse = await signedContract.mint(this.count, {
+            value
+          })
+        }
 
         console.log({ txResponse });
 

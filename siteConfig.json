@@ -12,6 +12,8 @@
         "mintPrice": 0.05,
         "voucherSigner": "",
         "chainIdHex": "0x1",
+        "chainId": 1,
+        "hasWhitelist": true,
         "abi": ""
     }
 }
