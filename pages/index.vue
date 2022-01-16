@@ -48,7 +48,7 @@ export default {
     },
     async mint() {
       try {
-        if(`0x${this.$wallet.hexChainId}` !== this.$siteConfig.smartContract.chainIdHex) {
+        if(this.$wallet.hexChainId !== this.$siteConfig.smartContract.chainIdHex) {
           const config = CHAINID_CONFIG_MAP[this.$siteConfig.smartContract.chainIdHex]
           await this.$wallet.switchNetwork(config) // will trigger page reload on success
           return

@@ -14,7 +14,7 @@ async function main() {
   
   const hiddenMetaUri = `ipfs://${HIDDEN_METADATA_CID}`
   const metaBaseUri = `ipfs://${METADATA_FOLDER_CID}/`
-  const reserveTokenCount = 30;
+  const reserveTokenCount = 5;
 
   const contract = await contractFactory.deploy(hiddenMetaUri, metaBaseUri, VOUCHER_SIGNER_PUBLIC_KEY, reserveTokenCount)
 
