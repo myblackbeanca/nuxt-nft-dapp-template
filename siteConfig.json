@@ -15,5 +15,8 @@
         "chainId": 1,
         "hasWhitelist": true,
         "abi": ""
+    },
+    "endpoints": {
+        "checkwhitelisted": "https://zerocodenft-functions.azurewebsites.net/api/checkwhitelisted"
     }
 }

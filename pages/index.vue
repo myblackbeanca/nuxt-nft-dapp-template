@@ -58,10 +58,26 @@ export default {
           await this.$wallet.connect()
         }
 
-        let buyPrice, txResponse;
+        let buyPrice, txResponse, isWhitelisted
 
         if(this.$siteConfig.smartContract.hasWhitelist) {
-          const isWhitelisted = await $axios.get('')
+          const { data } = fetch(this.$siteConfig.endpoints.checkwhitelisted, {
+            params: {
+              wallet: this.$wallet.account,
+              contract: this.$contract.address
+            }
+          })
+
+          isWhitelisted = data
+
+          if(!isWhitelisted) {
+            this.$bvToast.toast('Your wallet address is not whitelised', {
+              title: 'Mint',
+              variant: 'danger',
+              autoHideDelay: 3000
+            })
+            return
+          }
 
           const isPresale = await signedContract.isWhitelistSaleActive()
           const presalePrice = +ethers.formatEther(await signedContract.PRESALE_TOKEN_PRICE())
@@ -89,8 +105,8 @@ export default {
 
           const voucher = {
             redeemer: $wallet.account,
-            whitelisted: true,
-            numberOfTokens
+            whitelisted: isWhitelisted,
+            numberOfTokens: this.count
           }
 
           const { signer: mintSigner, signature } = await signVoucher(voucher, domain);
