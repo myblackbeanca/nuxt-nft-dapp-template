@@ -9,6 +9,7 @@
         "name": "Bored Apes Yacht Club",
         "symbol": "BAYC",
         "address": "",
+        "collectionSize":10000,
         "mintPrice": 0.05,
         "voucherSigner": "",
         "chainIdHex": "0x1",

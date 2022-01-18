@@ -74,7 +74,6 @@ export default {
             this.$bvToast.toast('Your wallet address is not whitelised', {
               title: 'Mint',
               variant: 'danger',
-              autoHideDelay: 3000
             })
             return
           }
@@ -136,7 +135,6 @@ export default {
           this.$bvToast.toast('Mint transaction confirmed. NFT should be in your wallet now!', {
             title: 'Mint',
             variant: 'success',
-            autoHideDelay: 3000
           })
         });
 
@@ -145,7 +143,6 @@ export default {
         this.$bvToast.toast(err.message || 'Mint failed', {
 					title: 'Mint',
 					variant: 'danger',
-					autoHideDelay: 3000
 				})
       }
     }

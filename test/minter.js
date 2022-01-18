@@ -1,15 +1,16 @@
 const { expect } = require("chai");
+const { name, mintPrice, collectionSize } = require('@/siteConfig.json').smartContract
 
-describe("MyContract contract", function () {
+describe(name, function () {
 
     let Token;
-    let hardhatToken;
+    let smartContract;
     let owner;
 
     beforeEach(async function () {
-        Token = await ethers.getContractFactory("MyContract");
+        Token = await ethers.getContractFactory(smartContract.name);
         
-        hardhatToken = await Token.deploy();
+        smartContract = await Token.deploy();
 
         [owner] = await ethers.getSigners();
     })
@@ -17,28 +18,28 @@ describe("MyContract contract", function () {
     describe("Deployment", function () {
         it("Deployment should set default values", async function () {
         
-            const TOKEN_PRICE = await hardhatToken.TOKEN_PRICE();
-            const COLLECTION_SIZE = await hardhatToken.COLLECTION_SIZE();
-            const isSaleActive = await hardhatToken.isSaleActive();
+            const TOKEN_PRICE = await smartContract.TOKEN_PRICE();
+            const COLLECTION_SIZE = await smartContract.COLLECTION_SIZE();
+            const isSaleActive = await smartContract.isSaleActive();
 
             console.log(ethers.utils.formatUnits(TOKEN_PRICE), +COLLECTION_SIZE, isSaleActive);
         
-            expect(ethers.utils.formatUnits(TOKEN_PRICE)).to.equal('0.05');
-            expect(+COLLECTION_SIZE).to.equal(1500);
-            expect(isSaleActive).to.equal(false);        
+            expect(ethers.utils.formatUnits(TOKEN_PRICE)).to.equal(mintPrice);
+            expect(+COLLECTION_SIZE).to.equal(collectionSize);
+            // expect(isSaleActive).to.equal(false);
         })
     })
 
     describe("Functions", function () {
         it("Flips the sale status", async function () {
         
-            let isSaleActive = await hardhatToken.isSaleActive();
+            let isSaleActive = await smartContract.isSaleActive();
         
             expect(isSaleActive).to.equal(false);
 
-            await hardhatToken.flipSaleState();
+            await smartContract.flipSaleState();
 
-            isSaleActive = await hardhatToken.isSaleActive();
+            isSaleActive = await smartContract.isSaleActive();
         
             expect(isSaleActive).to.equal(true);
         })
