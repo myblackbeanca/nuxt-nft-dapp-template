@@ -81,36 +81,27 @@ export default {
   },
   methods: {
     async init() {
-    //   if (!this.provider) {
-    //     this.provider = new ethers.providers.Web3Provider(window.ethereum);
-    //     this.provider.on("error", console.error);
-    //   }
-
-    //   if (!this.connectedAccount) {
-    //     const accounts = await this.provider.send("eth_requestAccounts", []);
-    //     this.connectedAccount = accounts[0];
-    //   }
-
-    //   this.signer = this.provider.getSigner();
-    //   console.log(this.signer);
-
-      this.signedContract = this.$contract.connect(this.signer);
-
-      await this.loadState();
+      try {
+        if (!this.$wallet.provider) return
+  
+        const signer = this.$wallet.provider.getSigner();
+        this.signedContract = this.$contract.connect(signer);
+  
+        await this.loadState();
+      } catch (err) {
+        console.error({err})
+      }
     },
     async call(name) {
       try {
-        if (!window.ethereum) {
-          alert("Metamask is not installed!");
-          return;
-        }
 
-        confirm(
+        if(!confirm(
           `Are you sure you want to call smart contract's '${name.toUpperCase()}' function ?`
-        );
+        )) return
 
-        const gasPrice = await this.signer.getGasPrice();
-        console.log("gasPrice", ethers.utils.formatUnits(gasPrice));
+        const signer = this.$wallet.provider.getSigner()
+        const gasPrice = await signer.getGasPrice()
+        console.log("gasPrice", ethers.utils.formatUnits(gasPrice))
 
         const txResponse = await this.signedContract[name]({
           gasPrice: gasPrice,
@@ -137,21 +128,21 @@ export default {
       this.revealStatus = (await this.signedContract.canReveal())
         ? "ON"
         : "OFF"
-      this.balance = ethers.utils.formatUnits(await this.provider.getBalance(this.signedContract.address)) + " ETH"
+      
+      const contractBalance = await this.$wallet.provider.getBalance(this.signedContract.address)
+      this.balance = ethers.utils.formatUnits(contractBalance)
     },
     onError(e) {
       console.error(e);
       this.$bvToast.toast(e?.data?.message || e.message || "Operation failed", {
         title: "Error",
         variant: "danger",
-        autoHideDelay: 4000,
       });
     },
     onSuccess(msg) {
       this.$bvToast.toast(msg || "Operation successful", {
         title: "Success",
         variant: "success",
-        autoHideDelay: 4000,
       });
     },
   },

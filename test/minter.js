@@ -18,9 +18,9 @@ describe(name, function () {
     describe("Deployment", function () {
         it("Deployment should set default values", async function () {
         
-            const TOKEN_PRICE = await smartContract.TOKEN_PRICE();
+            const TOKEN_PRICE = await smartContract.MINT_PRICE();
             const COLLECTION_SIZE = await smartContract.COLLECTION_SIZE();
-            const isSaleActive = await smartContract.isSaleActive();
+            const isSaleActive = await smartContract.isPublicSaleActive();
 
             console.log(ethers.utils.formatUnits(TOKEN_PRICE), +COLLECTION_SIZE, isSaleActive);
         
@@ -33,13 +33,13 @@ describe(name, function () {
     describe("Functions", function () {
         it("Flips the sale status", async function () {
         
-            let isSaleActive = await smartContract.isSaleActive();
+            let isSaleActive = await smartContract.isPublicSaleActive();
         
             expect(isSaleActive).to.equal(false);
 
             await smartContract.flipSaleState();
 
-            isSaleActive = await smartContract.isSaleActive();
+            isSaleActive = await smartContract.isPublicSaleActive();
         
             expect(isSaleActive).to.equal(true);
         })

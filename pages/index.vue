@@ -3,6 +3,7 @@
     <b-container id="container1" class="p-0" fluid>
       <b-row id="landing">
           <b-col class="d-flex align-items-center justify-content-center">
+            <p>Minted: {{ mintedCount }}/{{ collectionSize }}
             <b-button-toolbar key-nav aria-label="Toolbar with button groups">
               <b-button-group class="mx-1">
                 <b-button class="font-weight-bold" variant="success" @click="onCountDown">-</b-button>
@@ -36,7 +37,35 @@ import signVoucher from '@/utils/signVoucher'
 export default {
   data(){
     return {
-      count: 1
+      count: 1,
+      mintedCount: 0,
+      collectionSize: 0
+    }
+  },
+  async mounted() {
+
+    const { chainIdHex, abi, address, collectionSize } = this.$siteConfig.smartContract
+
+    try {
+
+      if(!this.$wallet.provider) return 
+
+      const network = await this.$wallet.provider.getNetwork()
+      const isWrongNetwork = `0x${network.chainId.toString(16)}` !== chainIdHex
+
+      if (isWrongNetwork) {        
+        // const config = CHAINID_CONFIG_MAP[chainIdHex]
+        // await this.$wallet.switchNetwork(config) // will trigger page reload on success
+        // return
+      }
+
+      const nftContract = new ethers.Contract(address, abi, this.$wallet.provider)
+      this.mintedCount = await nftContract.totalSupply()
+      this.collectionSize = await nftContract.COLLECTION_SIZE()
+      
+    } catch (err) {
+      console.error({err})
+      this.collectionSize ??= collectionSize
     }
   },
   methods: {
@@ -47,9 +76,13 @@ export default {
       if(this.count > 1) this.count -= 1
     },
     async mint() {
+
+      const { chainIdHex, address, name, hasWhitelist, abi } = this.$siteConfig.smartContract
+      
       try {
-        if(this.$wallet.hexChainId !== this.$siteConfig.smartContract.chainIdHex) {
-          const config = CHAINID_CONFIG_MAP[this.$siteConfig.smartContract.chainIdHex]
+
+        if(this.$wallet.hexChainId !== chainIdHex) {
+          const config = CHAINID_CONFIG_MAP[chainIdHex]
           await this.$wallet.switchNetwork(config) // will trigger page reload on success
           return
         }
@@ -58,13 +91,15 @@ export default {
           await this.$wallet.connect()
         }
 
+        const contract = new ethers.Contract(address, abi);
+        const signedContract = contract.connect(this.$wallet.provider.getSigner());
         let buyPrice, txResponse, isWhitelisted
 
-        if(this.$siteConfig.smartContract.hasWhitelist) {
+        if(hasWhitelist) {
           const { data } = fetch(this.$siteConfig.endpoints.checkwhitelisted, {
             params: {
               wallet: this.$wallet.account,
-              contract: this.$contract.address
+              contract: address
             }
           })
 
@@ -92,8 +127,7 @@ export default {
 
         console.log({buyPrice})
 
-        if(this.$siteConfig.smartContract.hasWhitelist) {
-          const { chainId, address, name } = this.$siteConfig.smartContract
+        if(hasWhitelist) {
 
           const domain = {
             name: name.replace(/\s/g, ''),

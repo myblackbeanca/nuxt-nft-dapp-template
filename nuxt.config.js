@@ -1,9 +1,12 @@
 
-const { VOUCHER_SIGNER_PRIVATE_KEY, ALCHEMY_MAINNET_API_KEY } = process.env;
+import fs from 'fs'
+import path from 'path'
+
+const { VOUCHER_SIGNER_PRIVATE_KEY, ALCHEMY_RINKEBY_API_KEY, ALCHEMY_MAINNET_API_KEY, NODE_ENV  } = process.env;
 const siteConfig = require('./siteConfig.json')
 import getSiteMeta from './utils/siteMeta'
 
-const { title, description, url, iconName } = siteConfig.website
+const { title, description, url, iconName } = siteConfig
 
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
@@ -14,7 +17,7 @@ export default {
 
   env: {
     VOUCHER_SIGNER_PRIVATE_KEY,
-    ALCHEMY_MAINNET_API_KEY
+    ALCHEMY_API_KEY: NODE_ENV === 'production' ? ALCHEMY_MAINNET_API_KEY : ALCHEMY_RINKEBY_API_KEY
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -90,5 +93,25 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  hooks: {
+    generate: {
+      before(generator, options) {
+        // console.log(generator, options, siteConfig)
+        console.log(generator.nuxt.options.buildDir)
+        const extraFilePath = path.join(
+          generator.nuxt.options.buildDir,
+          'siteConfig.json'
+        )
+        
+        const config = {
+          "address":"123"
+        }
+        fs.writeFileSync(extraFilePath, JSON.stringify(config))
+      }
+    }
   }
+
+
 }
