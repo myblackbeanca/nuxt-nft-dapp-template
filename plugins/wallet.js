@@ -7,7 +7,7 @@ export default async ({env}, inject) => {
 
     const wallet = Vue.observable({
         account: null,
-        accountCompact: null,
+        accountCompact: 'Connect Wallet',
         network: null,
         balance: null,
         provider: null,
@@ -36,7 +36,7 @@ export default async ({env}, inject) => {
             }
             else {
                 this.account = null
-                this.accountCompact = null
+                this.accountCompact = 'Connect Wallet'
                 this.balance = null
             }
         },

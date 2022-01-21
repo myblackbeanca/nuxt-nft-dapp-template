@@ -25,9 +25,7 @@
 						variant="outline-light"
 						:disabled="!!$wallet.account"
 						@click="onWalletConnect">
-						<strong>{{
-							!!$wallet.account ? $wallet.accountCompact : 'Connect Wallet'
-						}}</strong>
+						<strong>{{ $wallet.accountCompact }}</strong>
 					</b-button>
 				</b-nav-item>
 			</b-navbar-nav>
@@ -41,7 +39,7 @@ const identity = window.netlifyIdentity
 export default {
 	data() {
 		return {
-			user: identity.user,
+			user: identity.currentUser(),
 		}
 	},
 	methods: {
@@ -53,7 +51,6 @@ export default {
 				this.$bvToast.toast(err.message || 'Wallet connection failed', {
 					title: 'Wallet',
 					variant: 'danger',
-					autoHideDelay: 3000
 				})
 			}
 		},

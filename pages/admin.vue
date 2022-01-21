@@ -1,156 +1,176 @@
 <template>
-  <div
-    class="
-      container
-      d-flex
-      flex-column
-      align-items-center
-      justify-content-center
-    "
-  >
-    <div v-if="user">
-      <p>PreSale Status: {{ presaleStatus }}</p>
-      <p>Sale Status: {{ publicSaleStatus }}</p>
-      <p>Reveal Status: {{ revealStatus }}</p>
-      <p>Balance: {{ balance }} </p>
-      <div class="btn-admin">
-        <b-button
-          @click="call('flipPresaleState')"
-          class="mr-2"
-          variant="outline-light"
-          >Flip Presale State</b-button
-        >
-        <b-button
-          @click="call('flipSaleState')"
-          class="mr-2"
-          variant="outline-light"
-          >Flip Sales State</b-button
-        >
-        <b-button
-          @click="call('reveal')"
-          :disabled="revealStatus === 'ON'"
-          class="mr-2"
-          variant="outline-light"
-          >Reveal</b-button
-        >
-        <b-button @click="call('reserve')" class="mr-2" variant="outline-light"
+	<div
+		class="
+			container
+			d-flex
+			flex-column
+			align-items-center
+			justify-content-center
+		">
+		<div v-if="user">
+			<b-form-checkbox
+				v-model="publicSaleStatus"
+				switch
+				size="lg"
+				class="mb-2"
+				@change="call('flipSaleState')"
+				:disabled="isBusy">
+				<b>Public Sale</b> {{ isBusy ? 'loading...' : '' }}
+			</b-form-checkbox>
+			<b-form-checkbox
+				v-if="$siteConfig.smartContract.hasWhitelist"
+				v-model="presaleStatus"
+				switch
+				size="lg"
+				class="mb-2"
+				:disabled="isBusy"
+				@change="call('flipPreSaleState')">
+				<b>Whitelist Sale</b> {{ isBusy ? 'loading...' : '' }}
+			</b-form-checkbox>
+			<b-form-checkbox
+				v-if="$siteConfig.smartContract.hasDelayedReveal"
+				v-model="revealStatus"
+				:disabled="revealStatus || isBusy"
+				switch
+				size="lg"
+				class="mb-2"
+				@change="call('reveal')">
+				<b>Revealed</b> {{ isBusy ? 'loading...' : '' }}
+			</b-form-checkbox>
+			<p>Balance: {{ balance }} ETH</p>
+			<b-button
+				@click="call('withdraw')"
+				variant="outline-dark"
+				:disabled="balance === 0"
+				>Withdraw</b-button
+			>
+			<!-- <div class="btn-admin">
+        <b-button @click="call('reserve')" class="mr-2" variant="outline-dark"
           >Reserve</b-button
         >
-        <b-button @click="call('withdraw')" variant="outline-light"
-          >Withdraw</b-button
-        >
-      </div>
-    </div>
-    <div v-else><h3>Admin only area. Please login</h3></div>
-  </div>
+      </div> -->
+		</div>
+		<div v-else><h3>Admin only area. Please login</h3></div>
+	</div>
 </template>
 
 <script>
-import { ethers } from "ethers";
+import { ethers } from 'ethers'
+import { CHAINID_CONFIG_MAP } from '@/utils/metamask'
 
-const identity = window.netlifyIdentity;
+const identity = window.netlifyIdentity
 
 export default {
-  layout: "admin",
-  name: "admin",
-  data() {
-    return {
-      user: identity.currentUser(),
-      alreadyCalled: false,
-      signedContract: null,
-      presaleStatus: "loading...",
-      publicSaleStatus: "loading...",
-      revealStatus: "loading...",
-      balance: "loading..."
-    };
-  },
-  async mounted() {
-    identity.on("login", (user) => {
-      this.user = user;
-      if (!alreadyCalled) {
-        this.alreadyCalled = true;
-        this.init();
-      }
-    });
-    identity.on("logout", () => {
-      this.user = null;
-    });
-    if (this.user) {
-      this.init();
-    }
-  },
-  methods: {
-    async init() {
-      try {
-        if (!this.$wallet.provider) return
-  
-        const signer = this.$wallet.provider.getSigner();
-        this.signedContract = this.$contract.connect(signer);
-  
-        await this.loadState();
-      } catch (err) {
-        console.error({err})
-      }
-    },
-    async call(name) {
-      try {
+	layout: 'admin',
+	name: 'admin',
+	data() {
+		return {
+			user: identity.currentUser(),
+			alreadyCalled: false,
+			presaleStatus: false,
+			publicSaleStatus: false,
+			revealStatus: false,
+			balance: 0,
+			isBusy: false,
+		}
+	},
+	async mounted() {
+		identity.on('login', (user) => {
+			this.user = user
+			if (!this.alreadyCalled) {
+				this.alreadyCalled = true
+				this.init()
+			}
+		})
+		identity.on('logout', () => {
+			this.user = null
+		})
+		if (this.user) {
+			this.init()
+		}
+	},
+	methods: {
+		async init() {
+			if (!this.$wallet.provider) return
 
-        if(!confirm(
-          `Are you sure you want to call smart contract's '${name.toUpperCase()}' function ?`
-        )) return
+			const { chainIdHex } = this.$siteConfig.smartContract
 
-        const signer = this.$wallet.provider.getSigner()
-        const gasPrice = await signer.getGasPrice()
-        console.log("gasPrice", ethers.utils.formatUnits(gasPrice))
+			const isWrongNetwork = this.$wallet.hexChainId !== chainIdHex
+			if (isWrongNetwork) {
+				const config = CHAINID_CONFIG_MAP[chainIdHex]
+				await this.$wallet.switchNetwork(config) // will trigger page reload on success
+				return
+			}
 
-        const txResponse = await this.signedContract[name]({
-          gasPrice: gasPrice,
-        });
+			if (!this.$wallet.account) {
+				await this.$wallet.connect()
+			}
 
-        console.log({ txResponse });
+			await this.loadState()
+		},
+		async call(name) {
+			try {
+				if (
+					!confirm(
+						`Are you sure you want to call smart contract's '${name.toUpperCase()}' function ?`
+					)
+        ) return
 
-        txResponse.wait().then(async (res) => {
-          console.log({ res });
-          await this.loadState();
-          this.onSuccess("State reloaded");
-        });
-      } catch (e) {
-        this.onError(e);
-      }
-    },
-    async loadState() {
-      this.presaleStatus = (await this.signedContract.isWhitelistSaleActive())
-        ? "ON"
-        : "OFF"
-      this.publicSaleStatus = (await this.signedContract.isPublicSaleActive())
-        ? "ON"
-        : "OFF"
-      this.revealStatus = (await this.signedContract.canReveal())
-        ? "ON"
-        : "OFF"
-      
-      const contractBalance = await this.$wallet.provider.getBalance(this.signedContract.address)
-      this.balance = ethers.utils.formatUnits(contractBalance)
-    },
-    onError(e) {
-      console.error(e);
-      this.$bvToast.toast(e?.data?.message || e.message || "Operation failed", {
-        title: "Error",
-        variant: "danger",
-      });
-    },
-    onSuccess(msg) {
-      this.$bvToast.toast(msg || "Operation successful", {
-        title: "Success",
-        variant: "success",
-      });
-    },
-  },
-};
+				this.isBusy = true
+
+				const { address, abi } = this.$siteConfig.smartContract
+				const signer = await this.$wallet.provider.getSigner()
+				const signedContract = new ethers.Contract(address, abi, signer)
+
+				const gasPrice = await signer.getGasPrice()
+				console.log('gasPrice', ethers.utils.formatUnits(gasPrice))
+
+				const txResponse = await signedContract[name]({
+					gasPrice: gasPrice,
+				})
+
+				console.log({ txResponse })
+
+				txResponse.wait().then(async (res) => {
+					console.log({ res })
+					await this.loadState()
+					this.onSuccess('State reloaded')
+				})
+			} catch (e) {
+				this.onError(e)
+			} finally {
+				this.isBusy = false
+			}
+		},
+		async loadState() {
+			const { address, abi } = this.$siteConfig.smartContract
+			const contract = new ethers.Contract(address, abi, this.$wallet.provider)
+			this.presaleStatus = await contract.isWhitelistSaleActive()
+			this.publicSaleStatus = await contract.isPublicSaleActive()
+			this.revealStatus = await contract.canReveal()
+			this.balance = +ethers.utils.formatUnits(
+				await this.$wallet.provider.getBalance(contract.address)
+			)
+		},
+		onError(e) {
+			console.error(e)
+			this.$bvToast.toast(e?.data?.message || e.message || 'Operation failed', {
+				title: 'Error',
+				variant: 'danger',
+			})
+		},
+		onSuccess(msg) {
+			this.$bvToast.toast(msg || 'Operation successful', {
+				title: 'Success',
+				variant: 'success',
+			})
+		},
+	},
+}
 </script>
 
-<style scoped lang='scss'>
+<style scoped lang="scss">
 .container {
-  min-height: calc(100vh - 185px);
+	min-height: calc(100vh - 185px);
 }
 </style>

@@ -14,6 +14,12 @@
 module.exports = {
   solidity: "0.8.1",
   defaultNetwork: "localhost",
+  settings: {
+    optimizer: {
+      enabled: true,
+      runs: 5000,
+    },
+  },
   networks: {
     localhost: {
       accounts: [`0x${CONTRACT_OWNER_PRIVATE_KEY}`]
