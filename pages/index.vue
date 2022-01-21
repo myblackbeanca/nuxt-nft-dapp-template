@@ -14,6 +14,8 @@
                 <b-button class="font-weight-bold" variant="success" size="lg" @click="mint">MINT</b-button>
               </b-button-group>
             </b-button-toolbar>
+            <h4 class='pt-2 text-light'>Minted: {{ mintedCount }}/{{ collectionSize }}</h4>
+            <br>
           </b-col>
       </b-row>
     </b-container>
@@ -33,6 +35,7 @@ console.groupEnd()
 
 import { CHAINID_CONFIG_MAP } from '@/utils/metamask'
 import signVoucher from '@/utils/signVoucher'
+import { ethers } from 'ethers'
 
 export default {
   data(){
@@ -54,9 +57,9 @@ export default {
       const isWrongNetwork = `0x${network.chainId.toString(16)}` !== chainIdHex
 
       if (isWrongNetwork) {        
-        // const config = CHAINID_CONFIG_MAP[chainIdHex]
-        // await this.$wallet.switchNetwork(config) // will trigger page reload on success
-        // return
+        const config = CHAINID_CONFIG_MAP[chainIdHex]
+        await this.$wallet.switchNetwork(config) // will trigger page reload on success
+        return
       }
 
       const nftContract = new ethers.Contract(address, abi, this.$wallet.provider)
@@ -161,7 +164,6 @@ export default {
         this.$bvToast.toast('Minted successfully! Wait for transaction to clear', {
 					title: 'Mint',
 					variant: 'success',
-					autoHideDelay: 3000
 				})
 
         txResponse.wait().then(async (res) => {
