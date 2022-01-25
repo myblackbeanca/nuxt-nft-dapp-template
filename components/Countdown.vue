@@ -1,5 +1,5 @@
 <template>
-  <b-container class="countdown-wrapper position-absolute">
+  <b-container class="countdown-wrapper">
     <p class="header text-white font-weight-bold text-nowrap text-center mb-0 mb-lg-2">Minting available in...</p>
     <b-row class="d-flex flex-nowrap box w-100 m-0">
       <b-col class="d-flex align-items-center flex-column m-1 p-0">

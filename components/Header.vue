@@ -2,15 +2,16 @@
 	<div>
 		<b-navbar toggleable="lg" type="dark" variant="dark">
 			<b-navbar-brand to="/">
-				<b-img src="logo.svg" alt="logo" width="60px" />
+				{{ $siteConfig.title }}
+				<!-- <b-img src="logo.svg" alt="logo" width="60px" /> -->
 			</b-navbar-brand>
 
 			<b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
 			<b-collapse id="nav-collapse" is-nav>
 				<b-navbar-nav>
-					<b-nav-item to="/#about">About</b-nav-item>
-					<b-nav-item to="/#team">Team</b-nav-item>
+					<!-- <b-nav-item to="/#about">About</b-nav-item>
+					<b-nav-item to="/#team">Team</b-nav-item> -->
 				</b-navbar-nav>
 
 				<!-- Right aligned nav items -->
@@ -59,7 +60,7 @@
 						:disabled="!!$wallet.account"
 						@click="onWalletConnect">
 						<strong>{{
-							!!$wallet.account ? $wallet.accountCompact : 'Connect Wallet'
+							$wallet.accountCompact
 						}}</strong>
 					</b-button>
 				</b-navbar-nav>
@@ -79,7 +80,6 @@ export default {
 				this.$bvToast.toast(err.message || 'Wallet connection failed', {
 					title: 'Wallet',
 					variant: 'danger',
-					autoHideDelay: 3000
 				})
 			}
 		}

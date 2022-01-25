@@ -1,21 +1,18 @@
 {
     "title": "Zero Code NFT dApp",
-    "description": "NFT collection drop",
+    "description": "NFT drop powered by Zero Code NFT",
     "url": "https://zerocodenft.com",
     "iconName": "logo.svg",
+    "checkWhitelistedUrl": "https://zerocodenft-functions.azurewebsites.net/api/checkwhitelisted",
     "smartContract": {
         "name": "Bored Apes Yacht Club",
         "symbol": "BAYC",
         "address": "",
         "collectionSize":10000,
         "mintPrice": 0.05,
-        "voucherSigner": "",
-        "chainIdHex": "0x1",
+        "whitelistPrice": 0.05,
         "chainId": 1,
         "hasWhitelist": true,
         "abi": ""
-    },
-    "endpoints": {
-        "checkwhitelisted": "https://zerocodenft-functions.azurewebsites.net/api/checkwhitelisted"
     }
 }

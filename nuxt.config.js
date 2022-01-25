@@ -2,7 +2,7 @@
 import fs from 'fs'
 import path from 'path'
 
-const { VOUCHER_SIGNER_PRIVATE_KEY, ALCHEMY_RINKEBY_API_KEY, ALCHEMY_MAINNET_API_KEY, NODE_ENV  } = process.env;
+const { VOUCHER_SIGNER_PRIVATE_KEY, ALCHEMY_RINKEBY_API_KEY, ALCHEMY_MAINNET_API_KEY, API_URL, WEBSITE_ID, NODE_ENV  } = process.env;
 const siteConfig = require('./siteConfig.json')
 import getSiteMeta from './utils/siteMeta'
 
@@ -17,7 +17,8 @@ export default {
 
   env: {
     VOUCHER_SIGNER_PRIVATE_KEY,
-    ALCHEMY_API_KEY: NODE_ENV === 'production' ? ALCHEMY_MAINNET_API_KEY : ALCHEMY_RINKEBY_API_KEY
+    ALCHEMY_API_KEY: NODE_ENV === 'production' ? ALCHEMY_MAINNET_API_KEY : ALCHEMY_RINKEBY_API_KEY,
+    WEBSITE_ID
   },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
@@ -56,8 +57,7 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '@/plugins/wallet',
-    '@/plugins/siteConfig',
-    '@/plugins/smartContract'
+    '@/plugins/siteConfig'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -74,6 +74,10 @@ export default {
     '@nuxtjs/sitemap',
     '@nuxtjs/axios'
   ],
+
+  axios: {
+    baseURL: API_URL
+  },
 
   bootstrapVue: {
     icons: true

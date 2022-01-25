@@ -3,19 +3,24 @@
     <b-container id="container1" class="p-0" fluid>
       <b-row id="landing">
           <b-col class="d-flex align-items-center justify-content-center">
-            <p>Minted: {{ mintedCount }}/{{ collectionSize }}
-            <b-button-toolbar key-nav aria-label="Toolbar with button groups">
-              <b-button-group class="mx-1">
-                <b-button class="font-weight-bold" variant="success" @click="onCountDown">-</b-button>
-                <b-button class="text-light font-weight-bold" variant="transparent"><h4>{{ count }}</h4></b-button>
-                <b-button class="font-weight-bold" variant="success" @click="onCountUp">+</b-button>
-              </b-button-group>
-              <b-button-group class="mx-1">
-                <b-button class="font-weight-bold" variant="success" size="lg" @click="mint">MINT</b-button>
-              </b-button-group>
-            </b-button-toolbar>
-            <h4 class='pt-2 text-light'>Minted: {{ mintedCount }}/{{ collectionSize }}</h4>
-            <br>
+              <b-jumbotron :header="$siteConfig.title" class="shadow text-center" :lead="$siteConfig.description" bg-variant="dark" text-variant="white">
+                <template v-if="!isMintingAvailable">
+                  <Countdown :date="$siteConfig.dropDate" />
+                </template>
+                <template v-else>
+                  <b-button-toolbar key-nav aria-label="Toolbar with button groups">
+                    <b-button-group class="mx-1">
+                      <b-button class="font-weight-bold" variant="success" @click="onCountDown">-</b-button>
+                      <b-button class="text-light font-weight-bold" variant="transparent"><h4>{{ count }}</h4></b-button>
+                      <b-button class="font-weight-bold" variant="success" @click="onCountUp">+</b-button>
+                    </b-button-group>
+                    <b-button-group class="mx-1">
+                      <b-button class="font-weight-bold" variant="success" size="lg" @click="mint">MINT</b-button>
+                    </b-button-group>
+                  </b-button-toolbar>
+                  <h4 class='pt-2 text-light'>Minted: {{ mintedCount }}/{{ collectionSize }}</h4>
+                </template>
+              </b-jumbotron>
           </b-col>
       </b-row>
     </b-container>
@@ -45,19 +50,24 @@ export default {
       collectionSize: 0
     }
   },
+  computed: {
+    isMintingAvailable() {
+      return new Date() > new Date(this.$siteConfig.dropDate)
+    }
+  },
   async mounted() {
 
-    const { chainIdHex, abi, address, collectionSize } = this.$siteConfig.smartContract
+    const { chainId, abi, address, collectionSize } = this.$siteConfig.smartContract
 
     try {
 
       if(!this.$wallet.provider) return 
 
       const network = await this.$wallet.provider.getNetwork()
-      const isWrongNetwork = `0x${network.chainId.toString(16)}` !== chainIdHex
+      const isWrongNetwork = network.chainId !== chainId
 
       if (isWrongNetwork) {        
-        const config = CHAINID_CONFIG_MAP[chainIdHex]
+        const config = CHAINID_CONFIG_MAP[chainId]
         await this.$wallet.switchNetwork(config) // will trigger page reload on success
         return
       }
@@ -80,18 +90,18 @@ export default {
     },
     async mint() {
 
-      const { chainIdHex, address, name, hasWhitelist, abi } = this.$siteConfig.smartContract
+      const { chainId, address, name, hasWhitelist, abi } = this.$siteConfig.smartContract
       
       try {
 
-        if(this.$wallet.hexChainId !== chainIdHex) {
-          const config = CHAINID_CONFIG_MAP[chainIdHex]
-          await this.$wallet.switchNetwork(config) // will trigger page reload on success
-          return
-        }
-
         if(!this.$wallet.account) {
           await this.$wallet.connect()
+        }
+
+        if(this.$wallet.network.chainId !== chainId) {
+          const config = CHAINID_CONFIG_MAP[chainId]
+          await this.$wallet.switchNetwork(config) // will trigger page reload on success
+          return
         }
 
         const contract = new ethers.Contract(address, abi);
@@ -99,7 +109,7 @@ export default {
         let buyPrice, txResponse, isWhitelisted
 
         if(hasWhitelist) {
-          const { data } = fetch(this.$siteConfig.endpoints.checkwhitelisted, {
+          const { data } = fetch(this.$siteConfig.checkWhitelistedUrl, {
             params: {
               wallet: this.$wallet.account,
               contract: address
@@ -190,12 +200,12 @@ export default {
 
 #container1 {
   overflow:hidden;
-  min-height: calc(100vh - 194px);
+  min-height: calc(100vh - 164px);
 }
 
 #landing {
   min-height:inherit;
-  background: url("@/assets/img/background.jpg");
+  // background: url("@/assets/img/background.jpg");
 }
 
 </style>
