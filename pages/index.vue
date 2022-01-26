@@ -54,6 +54,8 @@ export default {
 
       if(!this.$wallet.provider) return 
 
+      if(!this.isMintingAvailable) return
+
       const isWrongNetwork = this.$wallet.chainId != targetChainId
 
       if (isWrongNetwork) {        
