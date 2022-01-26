@@ -1,5 +1,3 @@
-// const siteConfig = require('@/siteConfig.json')
-
 export default async ({env, $axios}, inject) => {
 
     // console.log(env)
@@ -10,6 +8,7 @@ export default async ({env, $axios}, inject) => {
         console.log({websiteConfig})
         siteConfig = websiteConfig
     } catch (err) {
+        siteConfig = require('@/siteConfig.json')
         console.error(err)
     }
 

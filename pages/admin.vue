@@ -50,7 +50,7 @@
         >
       </div> -->
 		</div>
-		<div v-else><h3>Admin only area. Please login</h3></div>
+		<div v-else><h3>Admin only area</h3></div>
 	</div>
 </template>
 
@@ -93,11 +93,11 @@ export default {
 		async init() {
 			if (!this.$wallet.provider) return
 
-			const { chainIdHex } = this.$siteConfig.smartContract
+			const { chainId: targetChainId } = this.$siteConfig.smartContract
+			const isWrongNetwork = this.$wallet.chainId != targetChainId
 
-			const isWrongNetwork = this.$wallet.hexChainId !== chainIdHex
 			if (isWrongNetwork) {
-				const config = CHAINID_CONFIG_MAP[chainIdHex]
+				const config = CHAINID_CONFIG_MAP[targetChainId]
 				await this.$wallet.switchNetwork(config) // will trigger page reload on success
 				return
 			}
@@ -114,7 +114,9 @@ export default {
 					!confirm(
 						`Are you sure you want to call smart contract's '${name.toUpperCase()}' function ?`
 					)
-        ) return
+				) {
+					return
+				}
 
 				this.isBusy = true
 
@@ -136,8 +138,8 @@ export default {
 					await this.loadState()
 					this.onSuccess('State reloaded')
 				})
-			} catch (e) {
-				this.onError(e)
+			} catch (err) {
+				this.onError(err)
 			} finally {
 				this.isBusy = false
 			}
@@ -152,15 +154,15 @@ export default {
 				await this.$wallet.provider.getBalance(contract.address)
 			)
 		},
-		onError(e) {
-			console.error(e)
-			this.$bvToast.toast(e?.data?.message || e.message || 'Operation failed', {
+		onError(err) {
+			console.error({ err })
+			this.$bvToast.toast(err?.data?.message || err.message || 'Request failed', {
 				title: 'Error',
 				variant: 'danger',
 			})
 		},
 		onSuccess(msg) {
-			this.$bvToast.toast(msg || 'Operation successful', {
+			this.$bvToast.toast(msg || 'Request successful', {
 				title: 'Success',
 				variant: 'success',
 			})
@@ -171,6 +173,6 @@ export default {
 
 <style scoped lang="scss">
 .container {
-	min-height: calc(100vh - 185px);
+	min-height: calc(100vh - 178px);
 }
 </style>

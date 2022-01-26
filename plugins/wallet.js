@@ -16,6 +16,10 @@ export default async ({env}, inject) => {
             return '0x' + this.network?.chainId?.toString(16)
         },
 
+        get chainId() {
+            return this.network?.chainId
+        },
+
         async init() {
             if(!window.ethereum) return
             

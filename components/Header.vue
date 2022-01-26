@@ -17,26 +17,30 @@
 				<!-- Right aligned nav items -->
 				<b-navbar-nav class="ml-auto">
 					<b-link
+						v-if="$siteConfig.twitterURL"
 						class="my-auto mr-2 pb-2 pb-sm-0"
-						href="https://twitter.com/"
+						:href="$siteConfig.twitterURL"
 						target="_blank">
 						<b-icon icon="twitter" variant="light" font-scale="1.5" />
 					</b-link>
 					<b-link
+						v-if="$siteConfig.discordURL"
 						class="my-auto mr-2 pb-2 pb-sm-0"
-						href="https://discord.gg/"
+						:href="$siteConfig.discordURL"
 						target="_blank">
 						<b-icon icon="discord" variant="light" font-scale="1.5" />
 					</b-link>
 					<b-link
+						v-if="$siteConfig.instagramURL"
 						class="my-auto mr-2 pb-2 pb-sm-0"
-						href="https://www.instagram.com/"
+						:href="$siteConfig.instagramURL"
 						target="_blank">
 						<b-icon icon="instagram" variant="light" font-scale="1.5" />
 					</b-link>
 					<b-link
+						v-if="$siteConfig.marketplaceURL"
 						class="my-auto mr-3 pb-2 pb-sm-0"
-						href="https://opensea.io/"
+						:href="$siteConfig.marketplaceURL"
 						target="_blank">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -59,9 +63,7 @@
 						variant="light"
 						:disabled="!!$wallet.account"
 						@click="onWalletConnect">
-						<strong>{{
-							$wallet.accountCompact
-						}}</strong>
+						<strong>{{ $wallet.accountCompact }}</strong>
 					</b-button>
 				</b-navbar-nav>
 			</b-collapse>

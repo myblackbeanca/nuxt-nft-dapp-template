@@ -1,18 +1,24 @@
 {
-    "title": "Zero Code NFT dApp",
-    "description": "NFT drop powered by Zero Code NFT",
-    "url": "https://zerocodenft.com",
-    "iconName": "logo.svg",
-    "checkWhitelistedUrl": "https://zerocodenft-functions.azurewebsites.net/api/checkwhitelisted",
-    "smartContract": {
-        "name": "Bored Apes Yacht Club",
-        "symbol": "BAYC",
-        "address": "",
-        "collectionSize":10000,
-        "mintPrice": 0.05,
-        "whitelistPrice": 0.05,
-        "chainId": 1,
-        "hasWhitelist": true,
-        "abi": ""
-    }
+	"title": "Zero Code NFT dApp",
+	"description": "NFT drop powered by Zero Code NFT",
+	"url": "https://zerocodenft.com",
+	"iconName": "logo.svg",
+	"checkWhitelistedUrl": "https://zerocodenft-functions.azurewebsites.net/api/checkwhitelisted",
+	"dropDate": "01/28/2022",
+	"instagramURL": "https://www.instagram.com/",
+	"twitterURL": "https://www.twitter.com/",
+	"discordURL": "https://www.discord.com/",
+	"marketplaceURL": "https://www.instagram.com/",
+	"smartContract": {
+		"name": "Bored Apes Yacht Club",
+		"symbol": "BAYC",
+		"address": "",
+		"collectionSize": 10000,
+		"mintPrice": 0.05,
+		"whitelistPrice": 0.04,
+		"chainId": 4,
+		"hasWhitelist": true,
+		"hasDelayedReveal": true,
+		"abi": ""
+	}
 }

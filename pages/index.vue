@@ -1,30 +1,20 @@
 <template>
-  <div>
-    <b-container id="container1" class="p-0" fluid>
+    <b-container id="container" fluid>
       <b-row id="landing">
-          <b-col class="d-flex align-items-center justify-content-center">
+          <b-col class="d-flex align-items-center justify-content-center backdrop-blur">
               <b-jumbotron :header="$siteConfig.title" class="shadow text-center" :lead="$siteConfig.description" bg-variant="dark" text-variant="white">
-                <template v-if="!isMintingAvailable">
-                  <Countdown :date="$siteConfig.dropDate" />
-                </template>
-                <template v-else>
-                  <b-button-toolbar key-nav aria-label="Toolbar with button groups">
-                    <b-button-group class="mx-1">
-                      <b-button class="font-weight-bold" variant="success" @click="onCountDown">-</b-button>
-                      <b-button class="text-light font-weight-bold" variant="transparent"><h4>{{ count }}</h4></b-button>
-                      <b-button class="font-weight-bold" variant="success" @click="onCountUp">+</b-button>
-                    </b-button-group>
-                    <b-button-group class="mx-1">
-                      <b-button class="font-weight-bold" variant="success" size="lg" @click="mint">MINT</b-button>
-                    </b-button-group>
-                  </b-button-toolbar>
+                <div v-if="isMintingAvailable">
                   <h4 class='pt-2 text-light'>Minted: {{ mintedCount }}/{{ collectionSize }}</h4>
-                </template>
+                  <b-form-spinbutton class="w-50 mx-auto my-3" v-model="count" min="1" max="20"></b-form-spinbutton>
+                  <b-button class="font-weight-bold" variant="light" size="lg" @click="mint">MINT</b-button>
+                </div>
+                <div v-else>
+                  <Countdown :date="$siteConfig.dropDate" />
+                </div>
               </b-jumbotron>
           </b-col>
       </b-row>
     </b-container>
-  </div>
 </template>
 
 <script>
@@ -52,22 +42,22 @@ export default {
   },
   computed: {
     isMintingAvailable() {
+      // console.log(this.$siteConfig.dropDate, new Date(this.$siteConfig.dropDate))
       return new Date() > new Date(this.$siteConfig.dropDate)
     }
   },
   async mounted() {
 
-    const { chainId, abi, address, collectionSize } = this.$siteConfig.smartContract
+    const { chainId: targetChainId, abi, address, collectionSize } = this.$siteConfig.smartContract
 
     try {
 
       if(!this.$wallet.provider) return 
 
-      const network = await this.$wallet.provider.getNetwork()
-      const isWrongNetwork = network.chainId !== chainId
+      const isWrongNetwork = this.$wallet.chainId != targetChainId
 
       if (isWrongNetwork) {        
-        const config = CHAINID_CONFIG_MAP[chainId]
+        const config = CHAINID_CONFIG_MAP[targetChainId]
         await this.$wallet.switchNetwork(config) // will trigger page reload on success
         return
       }
@@ -82,12 +72,6 @@ export default {
     }
   },
   methods: {
-    onCountUp() {
-      this.count += 1
-    },
-    onCountDown(){
-      if(this.count > 1) this.count -= 1
-    },
     async mint() {
 
       const { chainId, address, name, hasWhitelist, abi } = this.$siteConfig.smartContract
@@ -98,15 +82,17 @@ export default {
           await this.$wallet.connect()
         }
 
-        if(this.$wallet.network.chainId !== chainId) {
+        if(this.$wallet.chainId !== chainId) {
           const config = CHAINID_CONFIG_MAP[chainId]
           await this.$wallet.switchNetwork(config) // will trigger page reload on success
           return
         }
 
-        const contract = new ethers.Contract(address, abi);
-        const signedContract = contract.connect(this.$wallet.provider.getSigner());
-        let buyPrice, txResponse, isWhitelisted
+        const contract = new ethers.Contract(address, abi)
+        const signedContract = contract.connect(this.$wallet.provider.getSigner())
+        let buyPrice = +ethers.formatEther(await signedContract.MINT_PRICE())
+
+        let txResponse, isWhitelisted
 
         if(hasWhitelist) {
           const { data } = fetch(this.$siteConfig.checkWhitelistedUrl, {
@@ -128,11 +114,7 @@ export default {
 
           const isPresale = await signedContract.isWhitelistSaleActive()
           const presalePrice = +ethers.formatEther(await signedContract.PRESALE_TOKEN_PRICE())
-          const publicPrice = +ethers.formatEther(await signedContract.MINT_PRICE())
           buyPrice = isPresale ? presalePrice : publicPrice
-        }
-        else {
-          buyPrice = +ethers.formatEther(await signedContract.MINT_PRICE())
         }
 
         const total = this.count * buyPrice
@@ -198,14 +180,18 @@ export default {
 
 <style lang="scss" scoped>
 
-#container1 {
+#container {
   overflow:hidden;
   min-height: calc(100vh - 164px);
 }
 
 #landing {
   min-height:inherit;
-  // background: url("@/assets/img/background.jpg");
+  background: url("@/assets/img/background.jpg");
+}
+
+.backdrop-blur {
+  backdrop-filter: blur(2px);
 }
 
 </style>

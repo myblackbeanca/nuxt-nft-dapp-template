@@ -1,8 +1,9 @@
 <template>
 	<b-navbar toggleable="lg" type="dark" variant="dark">
 		<b-navbar-brand to="/">
-				<b-img src="logo.svg" alt="logo" width="60px" />
-    </b-navbar-brand>
+			{{ $siteConfig.title }}
+			<!-- <b-img src="logo.svg" alt="logo" width="60px" /> -->
+		</b-navbar-brand>
 
 		<b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -47,7 +48,7 @@ export default {
 			try {
 				await this.$wallet.connect()
 			} catch (err) {
-				console.error({err})
+				console.error({ err })
 				this.$bvToast.toast(err.message || 'Wallet connection failed', {
 					title: 'Wallet',
 					variant: 'danger',
