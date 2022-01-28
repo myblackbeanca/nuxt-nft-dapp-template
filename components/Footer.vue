@@ -4,7 +4,7 @@
 			<b-row>
 				<b-col sm="12" md="6">
 					<b-nav class="justify-content-center justify-content-md-start">
-						<b-img-lazy src="logo.svg" width="60px" alt="logo" />
+						<b-img-lazy src="/logo.svg" width="60px" alt="logo" />
 						<!-- <b-nav-item href="#about" class="align-self-center" link-classes="text-light">About</b-nav-item>
                     <b-nav-item href="#team" class="align-self-center" link-classes="text-light">Team</b-nav-item> -->
 					</b-nav>

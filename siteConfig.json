@@ -1,7 +1,7 @@
 {
 	"title": "Zero Code NFT dApp",
 	"description": "NFT drop powered by Zero Code NFT",
-	"url": "https://zerocodenft-dapp.netlify.com",
+	"url": "https://zerocodenft-dapp.netlify.app",
 	"iconName": "logo.svg",
 	"checkWhitelistedUrl": "https://zerocodenft-functions.azurewebsites.net/api/checkwhitelisted",
 	"dropDate": "03/28/2022",
