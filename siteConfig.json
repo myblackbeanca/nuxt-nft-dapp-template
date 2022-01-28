@@ -1,14 +1,14 @@
 {
 	"title": "Zero Code NFT dApp",
 	"description": "NFT drop powered by Zero Code NFT",
-	"url": "https://zerocodenft.com",
+	"url": "https://zerocodenft-dapp.netlify.com",
 	"iconName": "logo.svg",
 	"checkWhitelistedUrl": "https://zerocodenft-functions.azurewebsites.net/api/checkwhitelisted",
 	"dropDate": "03/28/2022",
 	"instagramURL": "https://www.instagram.com/",
 	"twitterURL": "https://www.twitter.com/",
 	"discordURL": "https://www.discord.com/",
-	"marketplaceURL": "https://www.instagram.com/",
+	"marketplaceURL": "https://www.opensea.io/",
 	"smartContract": {
 		"name": "Bored Apes Yacht Club",
 		"symbol": "BAYC",

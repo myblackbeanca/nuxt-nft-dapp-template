@@ -19,16 +19,14 @@ module.exports = {
     },
   },
   networks: {
-    localhost: {
-      accounts: [`0x${CONTRACT_OWNER_PRIVATE_KEY}`]
-    },
+    localhost: {},
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${ALCHEMY_RINKEBY_API_KEY}`,
-      accounts: [`0x${CONTRACT_OWNER_PRIVATE_KEY}`]
+      accounts: [CONTRACT_OWNER_PRIVATE_KEY]
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_MAINNET_API_KEY}`,
-      accounts: [`0x${CONTRACT_OWNER_PRIVATE_KEY}`],
+      accounts: [CONTRACT_OWNER_PRIVATE_KEY],
     }
   },
   mocha: {

@@ -2,7 +2,7 @@ require('dotenv').config();
 const updateEnv = require('./updateEnv.js');
 
 async function main() {
-  const contractFactory = await ethers.getContractFactory("StonerSharks")
+  const contractFactory = await ethers.getContractFactory("YourContractName")
 
   const [deployer] = await ethers.getSigners();
 
